@@ -74,31 +74,29 @@ class Server:
 		map[y][4] = GRD_WALL_VB;
 		map[4][y] = GRD_WALL_HR;
 		#print map
-		#c.execute("""INSERT INTO rts_map (name,status) VALUES ('"""+str(name)+"""',1)""")
-		map_id = 1
-		m = {'_id': map_id, 'status':1}
+		m = {'status':1}
 		self.db.map.save(m)
+		map_id = m._id
 		for y, ys in map.items():
 			for x, v in ys.items():
 				#print "NAME:"+str(name)+" x:"+str(x)+" y:"+str(y)+" v:"+str(v)
-				#c.execute("""INSERT INTO rts_mapdata (map_id,x,y,v) VALUES ('"""+str(map_id)+"""',"""+str(x)+""","""+str(y)+""","""+str(v)+""")""")
 				mapdata = {'map_id': map_id, 'x':x, 'y':y, 'v':v}
 				self.db.mapdata.save(mapdata)
 		return 0
 	
 	def new_game( self, name, map_id ):
-		ground_id = map_id
 		#c.execute("""INSERT INTO rts_ground (map_id) VALUES ("""+str(map_id)+""")""")
-		ground = {'_id':ground_id, 'map_id':map_id}
+		ground = {'map_id':map_id}
 		self.db.ground.save(ground)
+		ground_id = ground._id
 		#c.execute("""INSERT INTO rts_grounddata (ground_id, x, y, v) SELECT """+str(ground_id)+""", x, y, v FROM rts_mapdata WHERE map_id="""+str(map_id))
 		mds = self.db.mapdata.find({'map_id':int(map_id)})
 		for md in mds:
-			grounddata = {'ground_id':ground_id, 'x':md['x'], 'y':md['y']}
+			grounddata = {'ground_id':ground_id, 'x':md.x, 'y':md.y}
 			self.db.grounddata.save(grounddata)
 		game = {'name':str(name), 'ground_id':ground_id, 'status':1}
 		self.db.game.save(game)
-		return 0
+		return game._id
 	
 	def start_game( self, gid ):
 		self.db.game.update({'_id':gid, 'status':1})

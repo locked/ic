@@ -16,14 +16,10 @@
  *
  * $Id$
 '''
-import random
-import datetime
+import random, datetime
 from math import sqrt
-
-TILE_SIZE = 24
-HALF_TILE_SIZE = 12
-
-INTEGER_MAX = 9999999
+from librts import *
+from mongoengine import *
 
 class Vector:
 	def __init__(self, x, y):
@@ -34,22 +30,14 @@ class PlayerManager(models.Manager):
 	def get_by_natural_key(self, id):
 		return self.get(id=id)
 
-
-class MongoModel:
-	def save(self):
-		db.save(o)
-
-
 # All players, kind of a profile of User
-class Player(MongoModel):
-	fields = {
-		'user_id': 'ForeignKey',
-		'game_id': 'ForeignKey',
-		'games': 'ManyToMany',
-		'name': 'Char',
-		'level': 'Integer',
-		'status': 'Integer',
-	}
+class Player(Document):
+	user = models.ForeignKey(User, unique=True)
+	games = models.ManyToManyField('Game',blank=True,null=True,related_name='player_games')
+	game = models.ForeignKey('Game',blank=True,null=True,related_name='player_game')
+	name = StringField(max_length=255,blank=True,null=True)
+	level = IntField(blank=True,null=True)
+	status = IntField(blank=True,null=True)
 	
 	def natural_key(self):
 		return { "id": self.id, "level": self.level, "name": self.name }
@@ -69,18 +57,16 @@ def create_player(sender, instance=None, **kwargs):
 post_save.connect(create_player, sender=User)
 
 
-class GameStatus(MongoModel):
-	fields = {
-		'game_id': 'ForeignKey',
-		'player_id': 'ForeignKey',
-		'team_id': 'ForeignKey',
-		'money_level': 'Integer',
-		'point_level': 'Integer',
-		'energy_production': 'Integer',
-		'energy_consumption': 'Integer',
-		'viewx': 'Integer',
-		'viewy': 'Integer',
-	}
+class GameStatus(Document):
+	game = models.ForeignKey('Game')
+	player = models.ForeignKey('Player')
+	team = models.ForeignKey('Team')
+	money_level = IntField(blank=True,null=True,default=0)
+	point_level = IntField(blank=True,null=True,default=0)
+	energy_production = IntField(blank=True,null=True,default=0)
+	energy_consumption = IntField(blank=True,null=True,default=0)
+	viewx = IntField(blank=True,null=True,default=0)
+	viewy = IntField(blank=True,null=True,default=0)
 	
 	def serialize(self):
 		vs = { 'objid':self.id, 'viewx':self.viewx, 'viewy':self.viewy, 'money_level':self.money_level, 'energy_production':self.energy_production, 'energy_consumption':self.energy_consumption }
@@ -93,33 +79,27 @@ class GameStatus(MongoModel):
 		return "Game None Player None"
 
 # All games
-class Game(MongoModel):
-	fields = {
-		'name': 'Char',
-		'ground_id': 'ForeignKey',
-		'status': 'Integer',
-	}
+class Game(Document):
+	name = StringField(max_length=255,blank=True,null=True)
+	ground = ReferenceField('Ground')
+	status = IntField(blank=True,null=True)
 	def __unicode__(self):
 		return self.name
 	def get_objs(self):
 		return self.objs
 
-class AnimationStep(MongoModel):
-	fields = {
-		'obj_id': 'ForeignKey',
-		'x': 'Integer',
-		'y': 'Integer',
-	}
-	type = models.IntegerField(blank=True,null=True,default=0)	# move, rotate
+class AnimationStep(Document):
+	obj = models.ForeignKey('Obj')
+	x = IntField()
+	y = IntField()
+	type = IntField(blank=True,null=True,default=0)	# move, rotate
 	
 	def __unicode__(self):
 		return "[%d:%d]" % (self.x,self.y)
 
-class ObjAction(MongoModel):
-	fields = {
-		'name': 'Char',
-		'js': 'Char',
-	}
+class ObjAction(Document):
+	name = StringField(max_length=255,blank=True,null=True)
+	js = StringField(max_length=255,blank=True,null=True)
 	
 	def __unicode__(self):
 		return self.name
@@ -128,18 +108,18 @@ class TeamManager(models.Manager):
 	def get_by_natural_key(self, id):
 		return self.get(id=id)
 
-class Team(MongoModel):
+class Team(Document):
 	type_choices = (
          #(u'allies', 'allies'),
          (u'nod', 'nod'),
 	)
-	type = models.CharField(max_length=255, choices=type_choices, default='nod')
+	type = StringField(max_length=255, choices=type_choices, default='nod')
 	color_choices = (
          (u'blue', 'blue'),
          (u'red', 'red'),
          (u'yellow', 'yellow'),
 	)
-	color = models.CharField(max_length=255, choices=color_choices, default='blue')
+	color = StringField(max_length=255, choices=color_choices, default='blue')
 	
 	def natural_key(self):
 		return { "id": self.id, "type": self.type, "color": self.color }
@@ -151,8 +131,8 @@ class ObjTypeManager(models.Manager):
 	def get_by_natural_key(self, id):
 		return self.get(id=id)
 
-class ObjType(MongoModel):
-	name = models.CharField(max_length=255,blank=True,null=True)
+class ObjType(Document):
+	name = StringField(max_length=255,blank=True,null=True)
 	surface_choices = (
         (u'1x1', '1x1'),
         (u'1x2', '1x2'),
@@ -163,29 +143,29 @@ class ObjType(MongoModel):
         (u'3x3', '3x3'),
         (u'4x4', '4x4'),
 	)
-	surface = models.CharField(max_length=4, choices=surface_choices, blank=True,null=True,default="1x1")
-	objclass = models.CharField(max_length=255,blank=True,null=True)
+	surface = StringField(max_length=4, choices=surface_choices, blank=True,null=True,default="1x1")
+	objclass = StringField(max_length=255,blank=True,null=True)
 	objtype_choices = (
         (u'batiment', 'Batiment'),
         (u'mobile', 'Mobile'),
 	)
-	objtype = models.CharField(max_length=30, choices=objtype_choices,blank=True,null=True)
+	objtype = StringField(max_length=30, choices=objtype_choices,blank=True,null=True)
 	available_actions = models.ManyToManyField('ObjAction',blank=True,null=True)
 	require = models.ManyToManyField('ObjType',blank=True,null=True,symmetrical=False,related_name='required_objtypes')
-	cost = models.IntegerField(blank=True,null=True,default=0)
-	spice_capacity = models.IntegerField(blank=True,null=True,default=0)
-	life_capacity = models.IntegerField(blank=True,null=True,default=0)
-	width = models.IntegerField(blank=True,null=True,default=24)
-	height = models.IntegerField(blank=True,null=True,default=24)
-	capabilities = models.CharField(max_length=255,blank=True,null=True,default='move')
-	build_steps = models.IntegerField(blank=True,null=True,default=0)
-	destruction_steps = models.IntegerField(blank=True,null=True,default=0)
-	animation_steps = models.IntegerField(blank=True,null=True,default=0)
-	energy_consumption = models.IntegerField(blank=True,null=True,default=0)
-	energy_production = models.IntegerField(blank=True,null=True,default=0)
-	attack_distance = models.IntegerField(blank=True,null=True,default=0)
-	attack_damage = models.IntegerField(blank=True,null=True,default=0)
-	attack_accuracy = models.IntegerField(blank=True,null=True,default=0)
+	cost = IntField(blank=True,null=True,default=0)
+	spice_capacity = IntField(blank=True,null=True,default=0)
+	life_capacity = IntField(blank=True,null=True,default=0)
+	width = IntField(blank=True,null=True,default=24)
+	height = IntField(blank=True,null=True,default=24)
+	capabilities = StringField(max_length=255,blank=True,null=True,default='move')
+	build_steps = IntField(blank=True,null=True,default=0)
+	destruction_steps = IntField(blank=True,null=True,default=0)
+	animation_steps = IntField(blank=True,null=True,default=0)
+	energy_consumption = IntField(blank=True,null=True,default=0)
+	energy_production = IntField(blank=True,null=True,default=0)
+	attack_distance = IntField(blank=True,null=True,default=0)
+	attack_damage = IntField(blank=True,null=True,default=0)
+	attack_accuracy = IntField(blank=True,null=True,default=0)
 	srctype = models.ForeignKey('ObjType',blank=True,null=True,related_name='src_objtype')
 	
 	def natural_key(self):
@@ -198,22 +178,22 @@ class ObjType(MongoModel):
 		return "ObjType:%s" % (self.name)
 
 
-class Obj(MongoModel):
+class Obj(Document):
 	game = models.ForeignKey('Game')
 	player = models.ForeignKey('Player')
 	team = models.ForeignKey('Team')
 	type = models.ForeignKey('ObjType')
-	x = models.IntegerField()
-	y = models.IntegerField()
-	posx = models.IntegerField(blank=True,null=True)
-	posy = models.IntegerField(blank=True,null=True)
-	orient = models.IntegerField(blank=True,null=True,default=0)
-	turret_orient = models.IntegerField(blank=True,null=True,default=0)
+	x = IntField()
+	y = IntField()
+	posx = IntField(blank=True,null=True)
+	posy = IntField(blank=True,null=True)
+	orient = IntField(blank=True,null=True,default=0)
+	turret_orient = IntField(blank=True,null=True,default=0)
 	current_action = models.ForeignKey('ObjAction',blank=True,null=True)
-	meta_state = models.CharField(max_length=255,blank=True,null=True,default="")
-	state = models.CharField(max_length=255,blank=True,null=True,default="")
-	spice_level = models.IntegerField(blank=True,null=True,default=0)
-	life_level = models.IntegerField(blank=True,null=True,default=0)
+	meta_state = StringField(max_length=255,blank=True,null=True,default="")
+	state = StringField(max_length=255,blank=True,null=True,default="")
+	spice_level = IntField(blank=True,null=True,default=0)
+	life_level = IntField(blank=True,null=True,default=0)
 	attack_target = models.ForeignKey('Obj',blank=True,null=True)
 	animationsteps = []
 	dying_time = None
@@ -309,6 +289,7 @@ class Obj(MongoModel):
 		if len(path)==0:
 			return path
 		self.anim_clear()
+		from rts.models import AnimationStep
 		# For some object (heavy vehicules), we rotate before moving
 		if 'rotate' in self.type.capabilities.split(","):
 			p1 = path[0]
@@ -566,39 +547,39 @@ class Obj(MongoModel):
 
 
 # All available map, used as a based to create a ground when beginning new game
-class Map(MongoModel):
-    name = models.CharField(max_length=255,blank=True,null=True)
-    status = models.IntegerField(blank=True,null=True)
+class Map(Document):
+    name = StringField(max_length=255,blank=True,null=True)
+    status = IntField(blank=True,null=True)
     def __unicode__(self):
         return self.name
 
-class MapData(MongoModel):
+class MapData(Document):
     map = models.ForeignKey('Map')
-    x = models.IntegerField(blank=True,null=True)
-    y = models.IntegerField(blank=True,null=True)
-    v = models.IntegerField(blank=True,null=True)
+    x = IntField(blank=True,null=True)
+    y = IntField(blank=True,null=True)
+    v = IntField(blank=True,null=True)
     def __unicode__(self):
         return "%s: %d, %d = %d" % (self.map.name, self.x, self.y, self.v)
 
 # For each game, the state of the map
-class Ground(MongoModel):
+class Ground(Document):
     map = models.ForeignKey('Map')
     def __unicode__(self):
         return self.map.name
 
-class GroundData(MongoModel):
+class GroundData(Document):
     ground = models.ForeignKey('Ground')
-    x = models.IntegerField(blank=True,null=True)
-    y = models.IntegerField(blank=True,null=True)
-    v = models.IntegerField(blank=True,null=True)
+    x = IntField(blank=True,null=True)
+    y = IntField(blank=True,null=True)
+    v = IntField(blank=True,null=True)
     def __unicode__(self):
         return self.x
 
-class Shadow(MongoModel):
+class Shadow(Document):
     gamestatus = models.ForeignKey('GameStatus')
-    x = models.IntegerField(blank=True,null=True)
-    y = models.IntegerField(blank=True,null=True)
-    v = models.IntegerField(blank=True,null=True)
+    x = IntField(blank=True,null=True)
+    y = IntField(blank=True,null=True)
+    v = IntField(blank=True,null=True)
     redraw = False
     
     def __unicode__(self):
@@ -617,61 +598,3 @@ class ShadowEncoder(simplejson.JSONEncoder):
             #return loads(serialize('json', obj))
             return { "v": o.v, "redraw": 0 }
         return JSONEncoder.default(self,o)
-    
-
-"""
-DROP TABLE IF EXISTS `player`;
-CREATE TABLE `player` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL DEFAULT '',
-  `level` int(10) NOT NULL DEFAULT '0',
-  `status` tinyint(3) unsigned NOT NULL default '0',
-  PRIMARY KEY  (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='All players';
-
-
-
-DROP TABLE IF EXISTS `player_game`;
-CREATE TABLE `player_game` (
-  `player_id` int(10) unsigned NOT NULL,
-  `game_id` int(10) unsigned NOT NULL,
-  `status` tinyint(3) unsigned NOT NULL default '0',
-  PRIMARY KEY  (`player_id`,`game_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='players/games';
-
-
-
-DROP TABLE IF EXISTS `game`;
-CREATE TABLE `game` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL DEFAULT '',
-  `status` tinyint(3) unsigned NOT NULL default '0',
-  PRIMARY KEY  (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='All games';
-
-
-
-DROP TABLE IF EXISTS `map`;
-CREATE TABLE `map` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL DEFAULT '',
-  `x` int(10) unsigned NOT NULL,
-  `y` int(10) unsigned NOT NULL,
-  `v` int(10) unsigned NOT NULL,
-  `status` tinyint(3) unsigned NOT NULL default '0',
-  PRIMARY KEY  (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Map';
-
-
-DROP TABLE IF EXISTS `ground`;
-CREATE TABLE `ground` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `mapid` int(10) unsigned NOT NULL,
-  `x` int(10) unsigned NOT NULL,
-  `y` int(10) unsigned NOT NULL,
-  `v` int(10) unsigned NOT NULL,
-  `status` tinyint(3) unsigned NOT NULL default '0',
-  PRIMARY KEY  (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Ground';
-
-"""

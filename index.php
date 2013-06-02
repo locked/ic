@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <?php
@@ -16,11 +15,11 @@ var map_tiles_x = <?= $map_tiles_x; ?>;
 var map_tiles_y = <?= $map_tiles_y; ?>;
 var map_width = <?= $map_width; ?>;
 var map_height = <?= $map_height; ?>;
-var game_id = <?= $game->id ; ?>;
-var player_id = <?= $user->get_profile->id ; ?>;
-var objtypes_raw = <?= $objtypes ; ?>;
-var players_raw = <?= $players ; ?>;
-var teams_raw = <?= $teams ; ?>;
+var game_id = <?= $game_id; ?>;
+var player_id = <?= $user_get_profile_id; ?>;
+var objtypes_raw = <?= $objtypes; ?>;
+var players_raw = <?= $players; ?>;
+var teams_raw = <?= $teams; ?>;
 var energy = 0;
 var money = 0;
 var layer_width = 100;
@@ -62,7 +61,7 @@ var anims = new Array();
 
 <div id="gameinfo">
 <h2>Game Info</h2>
-Player: <?= $user ; ?> (<a href="/game">menu</a> - <a href="<?= $auth_logout; ?>">logout</a>)
+Player: <?= $user; ?> (<a href="/game">menu</a> - <a href="<?= $auth_logout; ?>">logout</a>)
 </div>
 
 <div id="status">
@@ -72,7 +71,7 @@ Player: <?= $user ; ?> (<a href="/game">menu</a> - <a href="<?= $auth_logout; ?>
 </div>
 
 <div id="chat">
-<? if( $user->is_admin ): ?>
+<? if( true ): ?>
 	<h2>Log</h2>
 	<div id="log">
 	</div>
@@ -97,7 +96,7 @@ Player: <?= $user ; ?> (<a href="/game">menu</a> - <a href="<?= $auth_logout; ?>
 </div>
 <div class="break"></div>
 
-<? if( $user->is_admin ): ?>
+<? if( true ): ?>
 	<h2>Debug</h2>
 	<div id="debug">
 	<h2>Current Animations</h2>

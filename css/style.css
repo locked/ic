@@ -88,24 +88,24 @@ a, a:visited {
 }
 
 /* Ground
-.grd0 { background:url('graphics/grd.png'); }
-.grd0_1 { background:url('graphics/grd.png'); }
-.grd0_2 { background:url('graphics/grd2.png'); }
-.grd0_3 { background:url('graphics/grd3.png'); }
-.grdb { background:url('graphics/grdb.png'); }
-.grdb2 { background:url('graphics/grdb2.png'); }
+.grd0 { background:url('../graphics/grd.png'); }
+.grd0_1 { background:url('../graphics/grd.png'); }
+.grd0_2 { background:url('../graphics/grd2.png'); }
+.grd0_3 { background:url('../graphics/grd3.png'); }
+.grdb { background:url('../graphics/grdb.png'); }
+.grdb2 { background:url('../graphics/grdb2.png'); }
 
-.grd3 { background:url('graphics/wallh.png'); }
-.grd2 { background:url('graphics/wallv.png'); }
-.grd6 { background:url('graphics/wallvt.png'); }
-.grd7 { background:url('graphics/wallvb.png'); }
-.grd5 { background:url('graphics/wallhl.png'); }
-.grd4 { background:url('graphics/wallhr.png'); }
-.grd8 { background:url('graphics/wallctl.png'); }
+.grd3 { background:url('../graphics/wallh.png'); }
+.grd2 { background:url('../graphics/wallv.png'); }
+.grd6 { background:url('../graphics/wallvt.png'); }
+.grd7 { background:url('../graphics/wallvb.png'); }
+.grd5 { background:url('../graphics/wallhl.png'); }
+.grd4 { background:url('../graphics/wallhr.png'); }
+.grd8 { background:url('../graphics/wallctl.png'); }
 
-.waterv { background:url('graphics/waterv.png'); }
+.waterv { background:url('../graphics/waterv.png'); }
 
-.grd20 { background:url('graphics/spice.png'); }
+.grd20 { background:url('../graphics/spice.png'); }
 */
 
 .sel {
@@ -114,10 +114,10 @@ a, a:visited {
 	height:40px;
 	margin:2px;
 }
-.sel_soldier { background:url('graphics/objs/btn/soldier.png'); }
-.sel_jeep { background:url('graphics/objs/btn/jeep.png'); }
-.sel_plant { background:url('graphics/objs/btn/plant.png'); }
-.sel_refinery { background:url('graphics/objs/btn/refinery.png'); }
+.sel_soldier { background:url('../graphics/objs/btn/soldier.png'); }
+.sel_jeep { background:url('../graphics/objs/btn/jeep.png'); }
+.sel_plant { background:url('../graphics/objs/btn/plant.png'); }
+.sel_refinery { background:url('../graphics/objs/btn/refinery.png'); }
 
 .action {
 	float:left;
@@ -129,14 +129,14 @@ a.action:hover {
 	margin:0px;
 	border:2px solid gray;
 }
-.action_attack { background:url('graphics/actions.png') no-repeat; background-position:0px 0px; }
-.action_move { background:url('graphics/actions.png') no-repeat; background-position:-64px 0px; }
+.action_attack { background:url('../graphics/actions.png') no-repeat; background-position:0px 0px; }
+.action_move { background:url('../graphics/actions.png') no-repeat; background-position:-64px 0px; }
 
 
 .global_action {
 	width:30px;
 	height:24px;
-	background:url('graphics/sprites.png') no-repeat;
+	background:url('../graphics/sprites.png') no-repeat;
 	float:left;
 }
 .global_action_sell {

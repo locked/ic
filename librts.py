@@ -22,6 +22,9 @@ TILE_SIZE = 24
 
 SPICE_MAX_LEVEL = 10000
 
+HALF_TILE_SIZE = 12
+INTEGER_MAX = 9999999
+
 
 def find_path(startpoint, endpoint, ground, method='astar'):
 	import AStar

@@ -52,7 +52,7 @@ $(document).ready(function () {
 	//$.blockUI.defaults.overlayCSS.opacity = .2;
 	//$.blockUI.defaults.applyPlatformOpacityRules = false;
 
-	$.blockUI({ message: '<h1><img src="/static/busy.gif" /> Loading...</h1>' });
+	$.blockUI({ message: '<h1><img src="img/busy.gif" /> Loading...</h1>' });
 	
 	// Init 4 panes layout
 	$('body').layout({
@@ -388,9 +388,6 @@ function setViewPort( p ) {
 function realStartGame() {
 	$.unblockUI();
 
-	//$("body").get(0).style.cursor = "url('/static/cursor.cur')";
-	//$("body").get(0).style.cursor = 'crosshair'; //"url('/static/cursor.cur')";
-	
 	//$(document).ajaxStop(getAll);
 	setTimeout( getAll, 500 );
 	
